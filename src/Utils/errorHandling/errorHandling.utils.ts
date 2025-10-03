@@ -24,6 +24,11 @@ export class NotFoundException extends ApplicationException{
         super(message,404,options)
     }
 }
+export class ConflictException extends ApplicationException{
+    constructor(message:string,options?:ErrorOptions){
+        super(message,409,options)
+    }
+}
 
 export const globalErrorHandling = (err:IError,req:Request,res:Response,next:NextFunction)=>{
     const status:number = Number(err.statusCode) || 500;

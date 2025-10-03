@@ -13,6 +13,7 @@ export interface IUser{
     _id:Types.ObjectId;
     firstName:string;
     lastName:string;
+    userName?:string;
     email:string;
     confirmEmailOTP ?:string;
     confirmedAt?:Date
@@ -83,7 +84,7 @@ export const userSchema = new Schema<IUser>(
         toObject:{virtuals:true}
     }
 );
-userSchema.virtual('Full name').set(function (value:string){
+userSchema.virtual('userName').set(function (value:string){
     const [firstName,lastName]=value.split(' ') || []
     this.set({firstName,lastName})
 }).get(function(){

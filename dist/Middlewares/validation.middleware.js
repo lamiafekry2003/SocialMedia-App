@@ -46,6 +46,7 @@ exports.generalFiled = {
     email: zod_1.default.email({
         error: 'email is required'
     }),
-    password: zod_1.default.string(),
-    confirmPassword: zod_1.default.string()
+    password: zod_1.default.string({ error: 'password is required' }),
+    confirmPassword: zod_1.default.string({ error: 'confirm password is required' }),
+    otp: zod_1.default.string().regex(/^\d{6}/)
 };

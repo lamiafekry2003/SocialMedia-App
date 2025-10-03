@@ -96,7 +96,7 @@ exports.userSchema = new mongoose_1.Schema({
     toJSON: { virtuals: true },
     toObject: { virtuals: true }
 });
-exports.userSchema.virtual('Full name').set(function (value) {
+exports.userSchema.virtual('userName').set(function (value) {
     const [firstName, lastName] = value.split(' ') || [];
     this.set({ firstName, lastName });
 }).get(function () {

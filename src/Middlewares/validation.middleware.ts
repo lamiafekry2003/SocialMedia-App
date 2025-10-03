@@ -52,6 +52,7 @@ export const generalFiled={
             email:z.email({
                 error:'email is required'
             }),
-            password:z.string(),
-            confirmPassword:z.string()
+            password:z.string({error:'password is required'}),
+            confirmPassword:z.string({error:'confirm password is required'}),
+            otp:z.string().regex(/^\d{6}/)
 }

@@ -1,12 +1,18 @@
 import z from 'zod'
 import { generalFiled } from '../../Middlewares/validation.middleware'
 
-export const signUpSchema ={
+
+export const loginSchema ={
     body:z.strictObject({
-        username:generalFiled.username,
         email:generalFiled.email,
-        password:generalFiled.password,
-        confirmPassword:generalFiled.confirmPassword
+        password:generalFiled.password
+    })
+}
+
+export const signUpSchema ={
+   body:loginSchema.body.extend({
+     userName:generalFiled.username,
+     confirmPassword:generalFiled.confirmPassword
     }).superRefine((data,ctx)=>{
         if(data.password !== data.confirmPassword){
             ctx.addIssue({
@@ -15,8 +21,17 @@ export const signUpSchema ={
                 message:'password mis match'
             })
         }
-    })
+   })
     // .refine((data)=>data.password === data.confirmPassword,{
     //     message:'not confirmed'
     // })
 }
+
+export const confirmEmailSchema ={
+    body:z.strictObject({
+        email:generalFiled.email,
+        otp:generalFiled.otp
+    })
+}
+
+
