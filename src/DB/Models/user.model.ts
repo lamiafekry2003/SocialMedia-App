@@ -1,12 +1,12 @@
-import mongoose, { Schema, Types } from "mongoose";
+import mongoose, { HydratedDocument, Schema, Types } from "mongoose";
 
 export enum GenderEnum{
    Male='Male',
    Female='Female'
 }
 export enum RoleEnum{
-    User='User',
-    Admin='Admin'
+    USER='USER',
+    ADMIN='ADMIN'
 }
 
 export interface IUser{
@@ -19,7 +19,7 @@ export interface IUser{
     confirmedAt?:Date
     password:string;
     resetPasswordOTP:string;
-    changeCredentialsTime ?:string;
+    changeCredentialsTime ?:Date;
     phone?:string;
     address?:string;
     gender:GenderEnum;
@@ -73,7 +73,7 @@ export const userSchema = new Schema<IUser>(
             values:Object.values(RoleEnum),
              message:'Role must be user or admin'
         },
-        default:RoleEnum.User
+        default:RoleEnum.USER
        }
 
 
@@ -92,3 +92,4 @@ userSchema.virtual('userName').set(function (value:string){
 })
 
 export const userModel = mongoose.models.User || mongoose.model<IUser>('User',userSchema);
+export type HUser = HydratedDocument<IUser>

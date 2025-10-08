@@ -7,6 +7,7 @@ import cors from 'cors'
 import helmet from 'helmet';
 import rateLimit, { type RateLimitRequestHandler } from 'express-rate-limit';
 import authRouter from './Modules/Auth/auth.controller'
+import userRouter from './Modules/User/user.controller'
 import { globalErrorHandling } from './Utils/errorHandling/errorHandling.utils';
 import connectDB from './DB/connection';
 
@@ -36,6 +37,7 @@ export const bootstrap =async():Promise<void>=>{
     })
 
     app.use('/api/auth',authRouter);
+    app.use('/api/user',userRouter);
 
     app.use(globalErrorHandling)
 

@@ -79,8 +79,13 @@ class AuthenactionServices {
         if (!(0, hash_utils_1.compareHash)(password, user.password)) {
             throw new errorHandling_utils_1.BadRequestException('invalid password');
         }
-        const accessToken = await (0, token_utils_1.generateToken)({ payload: { _id: user._id } });
-        return res.status(200).json({ message: 'user logged in Successfully', accessToken });
+        const credentials = await (0, token_utils_1.createLoginCredentials)(user);
+        return res.status(200).json({ message: 'user logged in Successfully', credentials });
+    };
+    refreshToken = async (req, res, next) => {
+        const credentials = await (0, token_utils_1.createLoginCredentials)(req.user);
+        await (0, token_utils_1.createRevokedToken)(req.decoded);
+        return res.status(201).json({ message: 'Done successfully', date: credentials });
     };
 }
 exports.default = new AuthenactionServices();

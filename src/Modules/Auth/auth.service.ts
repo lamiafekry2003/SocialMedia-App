@@ -1,12 +1,13 @@
 import type { NextFunction, Request,Response } from "express"
-import { userModel } from "../../DB/Models/user.model"
+import { HUser, userModel } from "../../DB/Models/user.model"
 import { ISignupDto } from "./auth.dto"
 import { BadRequestException, ConflictException, NotFoundException } from "../../Utils/errorHandling/errorHandling.utils"
 import { UserRepository } from "../../DB/Reposatories/user.repository"
 import { compareHash, generateHash } from "../../Utils/security/hash.utils"
 import { generateOtp } from "../../Utils/otp/generateOTP.utils"
 import { emailEvent } from "../../Utils/events/email.events.utils"
-import { generateToken } from "../../Utils/token/token.utils"
+import { createLoginCredentials, createRevokedToken} from "../../Utils/token/token.utils"
+import { JwtPayload } from "jsonwebtoken"
 
 
 class AuthenactionServices{
@@ -99,6 +100,7 @@ class AuthenactionServices{
         })
         return res.status(200).json({message:'user Confirmed Successfully',updateUser})
     }
+    
     login =async(req:Request,res:Response):Promise<Response>=>{
         const {email,password} = req.body
 
@@ -117,11 +119,18 @@ class AuthenactionServices{
             throw new BadRequestException('invalid password')
         }
         // generate token
-        const accessToken = await generateToken({payload:{_id:user._id}})
-
+      
+        const credentials = await createLoginCredentials(user)
         // all success
 
-        return res.status(200).json({message:'user logged in Successfully',accessToken})
+        return res.status(200).json({message:'user logged in Successfully',credentials})
+
+    }
+
+    refreshToken = async(req:Request,res:Response,next:NextFunction):Promise<Response>=>{
+        const credentials = await createLoginCredentials(req.user as HUser)
+        await createRevokedToken(req.decoded as JwtPayload)
+        return res.status(201).json({message:'Done successfully',date:credentials})
 
     }
 }

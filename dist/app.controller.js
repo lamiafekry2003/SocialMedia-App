@@ -12,6 +12,7 @@ const cors_1 = __importDefault(require("cors"));
 const helmet_1 = __importDefault(require("helmet"));
 const express_rate_limit_1 = __importDefault(require("express-rate-limit"));
 const auth_controller_1 = __importDefault(require("./Modules/Auth/auth.controller"));
+const user_controller_1 = __importDefault(require("./Modules/User/user.controller"));
 const errorHandling_utils_1 = require("./Utils/errorHandling/errorHandling.utils");
 const connection_1 = __importDefault(require("./DB/connection"));
 (0, dotenv_1.config)({ path: node_path_1.default.resolve('./config/.env.dev') });
@@ -35,6 +36,7 @@ const bootstrap = async () => {
         return res.status(200).json({ message: 'Hello from social media project' });
     });
     app.use('/api/auth', auth_controller_1.default);
+    app.use('/api/user', user_controller_1.default);
     app.use(errorHandling_utils_1.globalErrorHandling);
     app.listen(port, () => console.log(chalk_1.default.bgGreen(chalk_1.default.black(`Server is running on port ${port}!!`))));
 };

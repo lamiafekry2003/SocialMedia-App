@@ -42,8 +42,8 @@ var GenderEnum;
 })(GenderEnum || (exports.GenderEnum = GenderEnum = {}));
 var RoleEnum;
 (function (RoleEnum) {
-    RoleEnum["User"] = "User";
-    RoleEnum["Admin"] = "Admin";
+    RoleEnum["USER"] = "USER";
+    RoleEnum["ADMIN"] = "ADMIN";
 })(RoleEnum || (exports.RoleEnum = RoleEnum = {}));
 exports.userSchema = new mongoose_1.Schema({
     firstName: {
@@ -89,7 +89,7 @@ exports.userSchema = new mongoose_1.Schema({
             values: Object.values(RoleEnum),
             message: 'Role must be user or admin'
         },
-        default: RoleEnum.User
+        default: RoleEnum.USER
     }
 }, {
     timestamps: true,

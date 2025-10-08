@@ -30,6 +30,20 @@ export class ConflictException extends ApplicationException{
     }
 }
 
+export class unauthorizedException extends ApplicationException{
+    constructor(message:string,options?:ErrorOptions){
+        super(message,401,options)
+    }
+}
+
+export class ForbiddenException  extends ApplicationException{
+    constructor(message:string,options?:ErrorOptions){
+        super(message,403,options)
+    }
+}
+
+
+
 export const globalErrorHandling = (err:IError,req:Request,res:Response,next:NextFunction)=>{
     const status:number = Number(err.statusCode) || 500;
     return res.status(status).json({
