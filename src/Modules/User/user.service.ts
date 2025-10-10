@@ -5,6 +5,8 @@ import { IUser, userModel } from "../../DB/Models/user.model";
 import { createRevokedToken, LogoutEnum } from "../../Utils/token/token.utils";
 import { UserRepository } from "../../DB/Reposatories/user.repository";
 import { JwtPayload } from "jsonwebtoken";
+import { uploadFile, uploadFiles } from "../../Utils/multer/s3.config";
+import { StorageEnum } from "../../Utils/multer/cloud.multer";
 
 
 class UserServices{
@@ -40,6 +42,24 @@ class UserServices{
         })
 
         return res.status(statusCode).json({message:'user logout successfully'})
+    }
+
+    profileImage = async(req:Request,res:Response,next:NextFunction):Promise<Response> =>{
+        const key = await uploadFile({
+            file:req.file as Express.Multer.File,
+            path:`users/${req.decoded?._id}/profileImage`
+        })
+
+        return res.status(200).json({message:'Profile image uploaded Successfully',key})
+    }
+    profileCoverImage = async(req:Request,res:Response,next:NextFunction):Promise<Response> =>{
+        const urls= await uploadFiles({
+            storageApproch:StorageEnum.DISK,
+            files:req.files as Express.Multer.File[],
+            path:`user/${req?.decoded?._id}/coverImage`
+        })
+
+        return res.status(200).json({message:'cover image uploaded Successfully',urls})
     }
 } 
 

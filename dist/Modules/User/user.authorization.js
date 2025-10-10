@@ -5,4 +5,5 @@ const user_model_1 = require("../../DB/Models/user.model");
 exports.endPoint = {
     profile: [user_model_1.RoleEnum.USER, user_model_1.RoleEnum.ADMIN],
     logout: [user_model_1.RoleEnum.USER, user_model_1.RoleEnum.ADMIN],
+    image: [user_model_1.RoleEnum.USER, user_model_1.RoleEnum.ADMIN],
 };
