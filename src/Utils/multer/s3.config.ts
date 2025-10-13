@@ -1,9 +1,11 @@
-import { ObjectCannedACL, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { DeleteObjectCommand, DeleteObjectCommandOutput, DeleteObjectsCommand, GetObjectCommand, GetObjectCommandOutput, ObjectCannedACL, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";  //to upload and file 
 import { StorageEnum } from "./cloud.multer";
 import {v4 as uuid} from 'uuid'
 import { createReadStream } from "node:fs";
 import { BadRequestException } from "../errorHandling/errorHandling.utils";
-import { Upload } from "@aws-sdk/lib-storage";
+import { Upload } from "@aws-sdk/lib-storage";  // to upload large file
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+
 
 
 export const s3Config=()=>{
@@ -94,4 +96,101 @@ export const uploadFiles = async({
         })
     )
     return urls
+}
+
+// upload files using presignedURL 
+export const createPreSignedUrl = async({
+    Bucket = process.env.AWS_BUCKET_NAME as string,
+    path ='General',
+    ContentType,
+    originalname,
+    expiresIn = 120
+}:{
+    Bucket?:string,
+    path?:string,
+    ContentType:string,
+    originalname:string,
+    expiresIn?:number
+}):Promise<{url:string,Key:string}>=>{
+   const command = new PutObjectCommand({
+    Bucket,
+    Key:`${process.env.APPLICATION_NAME}/${path}/${uuid()}-presignedurl-${originalname}`,
+    ContentType,
+   })
+//    generate url
+   const url = await getSignedUrl(s3Config(),command,{
+    expiresIn
+   })
+   if(!url || !command.input.Key){
+    throw new BadRequestException('Fail to generate preSignedURL')
+   }
+   return {url, Key:command.input.Key}
+}
+// get url assests using preSigned url
+export const createGetPreSignedUrl= async({
+    Bucket = process.env.AWS_BUCKET_NAME as string,
+    Key,
+    downloadName = 'dummy',
+    download='false',
+    expiresIn=120
+}:{
+    Bucket?:string;
+    Key:string;
+    downloadName?:string;
+    download?:string;
+    expiresIn?:number
+})=>{
+    const command = new GetObjectCommand({
+        Bucket,
+        Key,
+        ResponseContentDisposition:download === 'true'?`attachment;filename=${downloadName}` :undefined
+    })
+    const url = await getSignedUrl(s3Config(),command,{
+        expiresIn
+    })
+    if(!url)
+        throw new BadRequestException('Fail to Generate Url')
+    return url
+
+
+}
+// get file upload 
+export const getFile = async({
+    Bucket = process.env.AWS_BUCKET_NAME as string,
+    Key,
+}:{Bucket?:string,Key:string}):Promise<GetObjectCommandOutput>=>{
+    const command= new GetObjectCommand({
+        Bucket,
+        Key
+    })
+    return await s3Config().send(command)
+}
+// delete file
+export const deleteFile = async({
+    Bucket = process.env.AWS_BUCKET_NAME as string,
+    Key,
+}:{Bucket?:string,Key:string}):Promise<DeleteObjectCommandOutput>=>{
+    const command = new DeleteObjectCommand({
+        Bucket,
+        Key
+    })
+   return await s3Config().send(command)
+}
+// delete file
+export const deleteFiles = async({
+    Bucket = process.env.AWS_BUCKET_NAME as string,
+    Urls,
+    Quiet = false
+}:{Bucket?:string,Urls:string[],Quiet:boolean}):Promise<DeleteObjectCommandOutput>=>{
+    const Objects =  Urls.map((url)=>{
+        return {Key:url}
+    })
+    const command = new DeleteObjectsCommand({
+        Bucket,
+        Delete:{
+            Objects,
+            Quiet
+        }
+    })
+   return await s3Config().send(command)
 }

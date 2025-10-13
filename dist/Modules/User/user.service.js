@@ -37,7 +37,19 @@ class UserServices {
             file: req.file,
             path: `users/${req.decoded?._id}/profileImage`
         });
-        return res.status(200).json({ message: 'Profile image uploaded Successfully', key });
+        if (req.user && req.user.profileImage?.key) {
+            await (0, s3_config_1.deleteFile)({
+                Bucket: process.env.AWS_BUCKET_NAME,
+                Key: req.user.profileImage.key,
+            });
+        }
+        const user = await this._userModel.findOneAndUpdate({
+            filter: { _id: req.user?._id },
+            update: { profileImage: key },
+        });
+        return res.status(200).json({
+            message: "Profile image uploaded successfully", data: user,
+        });
     };
     profileCoverImage = async (req, res, next) => {
         const urls = await (0, s3_config_1.uploadFiles)({
@@ -45,7 +57,43 @@ class UserServices {
             files: req.files,
             path: `user/${req?.decoded?._id}/coverImage`
         });
-        return res.status(200).json({ message: 'cover image uploaded Successfully', urls });
+        const user = await this._userModel.findOneAndUpdate({
+            filter: { _id: req.user?._id },
+            update: {
+                coverImages: { urls }
+            },
+            options: {
+                new: true
+            }
+        });
+        if (req.user?.coverImages?.urls?.length) {
+            for (const oldKey of req.user.coverImages.urls) {
+                if (oldKey) {
+                    await (0, s3_config_1.deleteFiles)({
+                        Bucket: process.env.AWS_BUCKET_NAME,
+                        Urls: [String(oldKey)],
+                        Quiet: false,
+                    });
+                }
+            }
+        }
+        return res.status(200).json({ message: 'cover image uploaded Successfully', data: user });
+    };
+    deleteImage = async (req, res, next) => {
+        const { Key } = req.query;
+        const result = await (0, s3_config_1.deleteFile)({
+            Key: Key
+        });
+        return res.status(200).json({ message: 'Image deleted successfully', result });
+    };
+    deleteImages = async (req, res, next) => {
+        const { Key } = req.query;
+        const urls = Key.split(',').map((key) => key.trim());
+        const result = await (0, s3_config_1.deleteFiles)({
+            Urls: urls,
+            Quiet: false,
+        });
+        return res.status(200).json({ message: 'Images deleted successfully', result });
     };
 }
 exports.default = new UserServices();

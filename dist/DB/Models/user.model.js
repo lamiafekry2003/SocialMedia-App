@@ -35,6 +35,8 @@ var __importStar = (this && this.__importStar) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.userModel = exports.userSchema = exports.RoleEnum = exports.GenderEnum = void 0;
 const mongoose_1 = __importStar(require("mongoose"));
+const errorHandling_utils_1 = require("../../Utils/errorHandling/errorHandling.utils");
+const zod_1 = require("zod");
 var GenderEnum;
 (function (GenderEnum) {
     GenderEnum["Male"] = "Male";
@@ -59,6 +61,12 @@ exports.userSchema = new mongoose_1.Schema({
         trim: true,
         minLength: [2, 'Last name must be at least 2 characters long'],
         maxLength: [25, 'Last name must be at most 25 characters long']
+    },
+    slug: {
+        type: String,
+        required: true,
+        minLength: 2,
+        maxLength: 51
     },
     email: {
         type: String,
@@ -90,7 +98,13 @@ exports.userSchema = new mongoose_1.Schema({
             message: 'Role must be user or admin'
         },
         default: RoleEnum.USER
-    }
+    },
+    profileImage: {
+        key: zod_1.string
+    },
+    coverImages: {
+        urls: [String],
+    },
 }, {
     timestamps: true,
     toJSON: { virtuals: true },
@@ -98,8 +112,13 @@ exports.userSchema = new mongoose_1.Schema({
 });
 exports.userSchema.virtual('userName').set(function (value) {
     const [firstName, lastName] = value.split(' ') || [];
-    this.set({ firstName, lastName });
+    this.set({ firstName, lastName, slug: value.replaceAll(/\s+/g, '-') });
 }).get(function () {
     return `${this.firstName} ${this.lastName}`;
+});
+exports.userSchema.pre('validate', function (next) {
+    if (!this.slug?.includes('-'))
+        throw new errorHandling_utils_1.BadRequestException(`Slug is required and must hold - ${this.firstName}-${this.lastName}`);
+    next();
 });
 exports.userModel = mongoose_1.default.models.User || mongoose_1.default.model('User', exports.userSchema);

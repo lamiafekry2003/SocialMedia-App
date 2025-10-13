@@ -48,4 +48,17 @@ export abstract class DatabaseRepository<TDocument>{
             $inc:{__v:1}
         },options)
     }
+    // find one and update
+    async findOneAndUpdate({
+    filter ,
+    update ={} ,
+    options = { runValidators: true, returnDocument: "after"  }
+    }:{
+        filter:RootFilterQuery<TDocument>
+        update:UpdateQuery<TDocument>
+        options?:QueryOptions & { returnDocument?: "before" | "after" }
+
+    }):Promise<TDocument|null>{
+        return await this.model.findOneAndUpdate(filter, { ...update, $inc: { __v: 1 } }, options);
+    }
 }

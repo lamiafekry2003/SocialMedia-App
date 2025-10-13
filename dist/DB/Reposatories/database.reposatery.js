@@ -25,5 +25,8 @@ class DatabaseRepository {
             $inc: { __v: 1 }
         }, options);
     }
+    async findOneAndUpdate({ filter, update = {}, options = { runValidators: true, returnDocument: "after" } }) {
+        return await this.model.findOneAndUpdate(filter, { ...update, $inc: { __v: 1 } }, options);
+    }
 }
 exports.DatabaseRepository = DatabaseRepository;

@@ -5,7 +5,7 @@ import { IUser, userModel } from "../../DB/Models/user.model";
 import { createRevokedToken, LogoutEnum } from "../../Utils/token/token.utils";
 import { UserRepository } from "../../DB/Reposatories/user.repository";
 import { JwtPayload } from "jsonwebtoken";
-import { uploadFile, uploadFiles } from "../../Utils/multer/s3.config";
+import { deleteFile, deleteFiles, uploadFile, uploadFiles } from "../../Utils/multer/s3.config";
 import { StorageEnum } from "../../Utils/multer/cloud.multer";
 
 
@@ -50,16 +50,83 @@ class UserServices{
             path:`users/${req.decoded?._id}/profileImage`
         })
 
-        return res.status(200).json({message:'Profile image uploaded Successfully',key})
+        if (req.user && req.user.profileImage?.key) {
+    await deleteFile({
+      Bucket: process.env.AWS_BUCKET_NAME as string,
+      Key: req.user.profileImage.key,
+    });
+  }
+  const user = await this._userModel.findOneAndUpdate({
+    filter: { _id: req.user?._id },
+    update: { profileImage: key },
+  });
+//   const url = await createGetPreSignedUrl({ Key: key })
+
+  return res.status(200).json({
+    message: "Profile image uploaded successfully",data:user,
+  });
     }
+    
+    // using createPreSignedUr
+    // profileImage = async(req:Request,res:Response,next:NextFunction):Promise<Response> =>{
+    //     const {ContentType,originalname}:{ContentType:string,originalname:string} = req.body
+    //     const {url,Key} = await createPreSignedUrl({
+    //         ContentType,
+    //         originalname,
+    //         path:`users/${req?.decoded?._id}`
+    //     })
+
+    //     return res.status(200).json({message:'Profile image uploaded Successfully',url,Key})
+    // }
+
     profileCoverImage = async(req:Request,res:Response,next:NextFunction):Promise<Response> =>{
+
         const urls= await uploadFiles({
             storageApproch:StorageEnum.DISK,
             files:req.files as Express.Multer.File[],
             path:`user/${req?.decoded?._id}/coverImage`
         })
 
-        return res.status(200).json({message:'cover image uploaded Successfully',urls})
+        const user= await this._userModel.findOneAndUpdate({
+            filter: { _id: req.user?._id },
+            update:{
+                coverImages:{urls}
+            },
+            options:{
+                 new: true 
+            }
+        })
+        if (req.user?.coverImages?.urls?.length) {
+
+      for (const oldKey of req.user.coverImages.urls) {
+        if(oldKey){
+            await deleteFiles({
+                Bucket: process.env.AWS_BUCKET_NAME as string,
+                Urls:[String(oldKey)],
+                Quiet: false,
+            })
+        }
+      }
+    }
+        return res.status(200).json({message:'cover image uploaded Successfully',data:user})
+    }
+    
+    deleteImage = async(req:Request,res:Response,next:NextFunction):Promise<Response>=>{
+        const {Key} = req.query as {Key : string}
+        const result = await deleteFile({
+            Key :Key as string
+        })
+        return res.status(200).json({message:'Image deleted successfully',result})
+
+    }
+    deleteImages = async(req:Request,res:Response,next:NextFunction):Promise<Response>=>{
+        const {Key} = req.query as {Key : string}
+        const urls = Key.split(',').map((key) => key.trim())
+          const result = await deleteFiles({
+            Urls: urls,
+            Quiet: false, 
+        })
+        return res.status(200).json({message:'Images deleted successfully',result})
     }
 } 
 

@@ -13,4 +13,6 @@ router.get('/profile', (0, authentication_middleware_1.authentication)(user_auth
 router.delete('/logout', (0, authentication_middleware_1.authentication)(user_authorization_1.endPoint.logout), user_service_1.default.logout);
 router.patch('/profile-image', (0, authentication_middleware_1.authentication)(user_authorization_1.endPoint.image), (0, cloud_multer_1.cloudFileUpload)({ validation: cloud_multer_1.fileValidation.image, maxSize: 2, storageApproch: cloud_multer_1.StorageEnum.MEMORY }).single('profileImage'), user_service_1.default.profileImage);
 router.patch('/cover-image', (0, authentication_middleware_1.authentication)(user_authorization_1.endPoint.image), (0, cloud_multer_1.cloudFileUpload)({ validation: cloud_multer_1.fileValidation.image, maxSize: 2, storageApproch: cloud_multer_1.StorageEnum.MEMORY }).array('coverImage', 5), user_service_1.default.profileCoverImage);
+router.get('/delete-image', (0, authentication_middleware_1.authentication)(user_authorization_1.endPoint.image), user_service_1.default.deleteImage);
+router.get('/delete-images', (0, authentication_middleware_1.authentication)(user_authorization_1.endPoint.image), user_service_1.default.deleteImages);
 exports.default = router;

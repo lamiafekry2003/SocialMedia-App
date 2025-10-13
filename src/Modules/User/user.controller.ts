@@ -8,5 +8,7 @@ import { cloudFileUpload, fileValidation, StorageEnum } from "../../Utils/multer
  router.delete('/logout',authentication(endPoint.logout),userServices.logout)
  router.patch('/profile-image',authentication(endPoint.image),cloudFileUpload({validation:fileValidation.image,maxSize:2,storageApproch:StorageEnum.MEMORY}).single('profileImage'),userServices.profileImage)
  router.patch('/cover-image',authentication(endPoint.image),cloudFileUpload({validation:fileValidation.image,maxSize:2,storageApproch:StorageEnum.MEMORY}).array('coverImage',5),userServices.profileCoverImage)
+ router.get('/delete-image',authentication(endPoint.image),userServices.deleteImage)
+ router.get('/delete-images',authentication(endPoint.image),userServices.deleteImages)
 
  export default router
