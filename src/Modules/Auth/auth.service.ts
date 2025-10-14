@@ -27,25 +27,26 @@ class AuthenactionServices{
              throw new ConflictException('User Already Exists')
 
         // Hash password
-        const hashPassword = await generateHash(password) 
+        // const hashPassword = await generateHash(password) 
         // generate OTP
         const otp = generateOtp()
         // send email
-        emailEvent.emit('confirmEmail',{to:email,otp,username:userName,subject:'Confirm your email'})
+        // emailEvent.emit('confirmEmail',{to:email,otp,username:userName,subject:'Confirm your email'})
 
        const user = (await this._userModel.createUser({
         data:[
             {
                 userName,
                 email,
-                password:hashPassword,
-                confirmEmailOTP:await generateHash(String(otp))
+                password,
+                confirmEmailOTP:`${otp}`
             }
         ],
         options:{
             validateBeforeSave:true
         }
        })) || []
+
        if(!user){
         throw new BadRequestException('failed to create user')
        }   
@@ -70,8 +71,6 @@ class AuthenactionServices{
     // } catch (error) {
     //     throw new BadRequestException('invalid request data',{cause:JSON.parse(error as string)})
     // }
-        
-        return res.status(201).json({message:'user created Successfully'})
 
     }
     confirmEmail = async(req:Request,res:Response,next:NextFunction):Promise<Response> =>{

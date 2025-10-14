@@ -37,6 +37,8 @@ exports.userModel = exports.userSchema = exports.RoleEnum = exports.GenderEnum =
 const mongoose_1 = __importStar(require("mongoose"));
 const errorHandling_utils_1 = require("../../Utils/errorHandling/errorHandling.utils");
 const zod_1 = require("zod");
+const hash_utils_1 = require("../../Utils/security/hash.utils");
+const email_events_utils_1 = require("../../Utils/events/email.events.utils");
 var GenderEnum;
 (function (GenderEnum) {
     GenderEnum["Male"] = "Male";
@@ -119,6 +121,24 @@ exports.userSchema.virtual('userName').set(function (value) {
 exports.userSchema.pre('validate', function (next) {
     if (!this.slug?.includes('-'))
         throw new errorHandling_utils_1.BadRequestException(`Slug is required and must hold - ${this.firstName}-${this.lastName}`);
+    next();
+});
+exports.userSchema.pre('save', async function (next) {
+    this.wasNew = this.isNew;
+    if (this.isModified('password')) {
+        this.password = await (0, hash_utils_1.generateHash)(this.password);
+    }
+    if (this.isModified('confirmEmailOTP')) {
+        this.confirmEmailPlainOtp = this.confirmEmailOTP;
+        this.confirmEmailOTP = await (0, hash_utils_1.generateHash)(this.confirmEmailOTP);
+    }
+    next();
+});
+exports.userSchema.post('save', async function (doc, next) {
+    const that = this;
+    if (that.wasNew && that.confirmEmailPlainOtp) {
+        email_events_utils_1.emailEvent.emit('confirmEmail', { to: this.email, otp: that.confirmEmailPlainOtp, username: this.userName, subject: 'Confirm your email' });
+    }
     next();
 });
 exports.userModel = mongoose_1.default.models.User || mongoose_1.default.model('User', exports.userSchema);

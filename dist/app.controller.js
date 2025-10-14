@@ -13,6 +13,7 @@ const helmet_1 = __importDefault(require("helmet"));
 const express_rate_limit_1 = __importDefault(require("express-rate-limit"));
 const auth_controller_1 = __importDefault(require("./Modules/Auth/auth.controller"));
 const user_controller_1 = __importDefault(require("./Modules/User/user.controller"));
+const post_controller_1 = __importDefault(require("./Modules/Post/post.controller"));
 const errorHandling_utils_1 = require("./Utils/errorHandling/errorHandling.utils");
 const connection_1 = __importDefault(require("./DB/connection"));
 const s3_config_1 = require("./Utils/multer/s3.config");
@@ -41,6 +42,7 @@ const bootstrap = async () => {
     });
     app.use('/api/auth', auth_controller_1.default);
     app.use('/api/user', user_controller_1.default);
+    app.use('/api/post', post_controller_1.default);
     app.get('/upload/*path', async (req, res) => {
         const { downloadName } = req.query;
         const { path } = req.params;

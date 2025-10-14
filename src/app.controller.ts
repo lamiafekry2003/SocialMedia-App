@@ -8,6 +8,7 @@ import helmet from 'helmet';
 import rateLimit, { type RateLimitRequestHandler } from 'express-rate-limit';
 import authRouter from './Modules/Auth/auth.controller'
 import userRouter from './Modules/User/user.controller'
+import postRouter from './Modules/Post/post.controller'
 import { BadRequestException, globalErrorHandling } from './Utils/errorHandling/errorHandling.utils';
 import connectDB from './DB/connection';
 import { createGetPreSignedUrl, getFile } from './Utils/multer/s3.config';
@@ -44,6 +45,7 @@ export const bootstrap =async():Promise<void>=>{
 
     app.use('/api/auth',authRouter);
     app.use('/api/user',userRouter);
+    app.use('/api/post',postRouter)
 
     // upload assests using stream
     app.get('/upload/*path',async(req:Request,res:Response)=>{

@@ -1,6 +1,8 @@
 import mongoose, { HydratedDocument, Schema, Types } from "mongoose";
 import { BadRequestException } from "../../Utils/errorHandling/errorHandling.utils";
 import { string } from "zod";
+import { generateHash } from "../../Utils/security/hash.utils";
+import { emailEvent } from "../../Utils/events/email.events.utils";
 
 export enum GenderEnum{
    Male='Male',
@@ -116,6 +118,29 @@ userSchema.pre('validate',function(next){
         throw new BadRequestException(`Slug is required and must hold - ${this.firstName}-${this.lastName}`)
     next()
 
+})
+// hashing password before save
+userSchema.pre('save', async function(this:HUser &{wasNew:boolean,confirmEmailPlainOtp?:string},next){
+    this.wasNew = this.isNew
+    if(this.isModified('password')){
+        this.password = await generateHash(this.password)
+    }
+    if(this.isModified('confirmEmailOTP')){
+        this.confirmEmailPlainOtp = this.confirmEmailOTP as string
+        this.confirmEmailOTP = await generateHash(this.confirmEmailOTP as string)
+    }
+    next()
+})
+// send email at creation 
+userSchema.post('save',async function(doc,next){
+    const that = this as HUser &{
+        wasNew:boolean,
+        confirmEmailPlainOtp?:string
+    }
+    if(that.wasNew && that.confirmEmailPlainOtp){
+         emailEvent.emit('confirmEmail',{to:this.email,otp:that.confirmEmailPlainOtp,username:this.userName,subject:'Confirm your email'})
+    }
+    next()
 })
 
 export const userModel = mongoose.models.User || mongoose.model<IUser>('User',userSchema);
