@@ -33,6 +33,25 @@ export abstract class DatabaseRepository<TDocument>{
         }
         return await doc.exec()
     }
+    // find
+    async find({
+        filter,
+        select,
+        options
+    }:{
+        filter?:RootFilterQuery<TDocument> | [],
+        select?:ProjectionType<TDocument> | null,
+        options?:QueryOptions<TDocument> | null
+    }):Promise<any | HydratedDocument<TDocument> | []>{
+        const doc =  this.model.find(filter|| [] ,options).select(select || '')
+        if(options?.populate){
+            doc.populate(options.populate as PopulateOptions[])
+        }
+        if(options?.lean){
+            doc.lean(options.lean)
+        }
+        return await doc.exec()
+    }
     // update one
     async updateOne({
         filter,
@@ -52,13 +71,21 @@ export abstract class DatabaseRepository<TDocument>{
     async findOneAndUpdate({
     filter ,
     update ={} ,
-    options = { runValidators: true, returnDocument: "after"  }
+    options = { runValidators: true, returnDocument: "after" ,new:true }
     }:{
         filter:RootFilterQuery<TDocument>
         update:UpdateQuery<TDocument>
         options?:QueryOptions & { returnDocument?: "before" | "after" }
 
-    }):Promise<TDocument|null>{
-        return await this.model.findOneAndUpdate(filter, { ...update, $inc: { __v: 1 } }, options);
+    }):Promise<any| HydratedDocument<TDocument> |null>{
+        const doc = this.model.findOneAndUpdate(filter,update)
+        if(options?.populate){
+            doc.populate(options.populate as PopulateOptions[])
+        }
+        if(options?.lean){
+            doc.lean(options.lean)
+        }
+        return await doc.exec()
+        // return await this.model.findOneAndUpdate(filter, { ...update, $inc: { __v: 1 } }, options);
     }
 }

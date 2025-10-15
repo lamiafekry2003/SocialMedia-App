@@ -12,4 +12,6 @@ const post_validation_1 = require("./post.validation");
 const cloud_multer_1 = require("../../Utils/multer/cloud.multer");
 const router = (0, express_1.Router)();
 router.post('/', (0, cloud_multer_1.cloudFileUpload)({ validation: cloud_multer_1.fileValidation.image, storageApproch: cloud_multer_1.StorageEnum.MEMORY }).array('attachment', 5), (0, validation_middleware_1.validation)(post_validation_1.createPostSchema), (0, authentication_middleware_1.authentication)(post_authorization_1.endPoint.createPost, authentication_middleware_1.TokenEnum.ACCESS), post_service_1.default.createPost);
+router.patch('/:postId/likes', (0, validation_middleware_1.validation)(post_validation_1.likePostSchema), (0, authentication_middleware_1.authentication)(post_authorization_1.endPoint.createPost, authentication_middleware_1.TokenEnum.ACCESS), post_service_1.default.likeUnlikePost);
+router.patch('/:postId', (0, cloud_multer_1.cloudFileUpload)({ validation: cloud_multer_1.fileValidation.image, storageApproch: cloud_multer_1.StorageEnum.MEMORY }).array('attachment', 5), (0, validation_middleware_1.validation)(post_validation_1.updatePostSchema), (0, authentication_middleware_1.authentication)(post_authorization_1.endPoint.createPost, authentication_middleware_1.TokenEnum.ACCESS), post_service_1.default.createPost);
 exports.default = router;

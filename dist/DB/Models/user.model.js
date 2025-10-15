@@ -85,6 +85,16 @@ exports.userSchema = new mongoose_1.Schema({
     changeCredentialsTime: String,
     phone: String,
     address: String,
+    freezedBy: {
+        type: mongoose_1.Schema.Types.ObjectId,
+        ref: 'User'
+    },
+    freezedAt: Date,
+    restoredBy: {
+        type: mongoose_1.Schema.Types.ObjectId,
+        ref: 'User'
+    },
+    restoredAt: Date,
     gender: {
         type: String,
         enum: {
@@ -101,6 +111,12 @@ exports.userSchema = new mongoose_1.Schema({
         },
         default: RoleEnum.USER
     },
+    friends: [
+        {
+            type: mongoose_1.Schema.Types.ObjectId,
+            ref: 'User'
+        }
+    ],
     profileImage: {
         key: zod_1.string
     },
@@ -140,5 +156,14 @@ exports.userSchema.post('save', async function (doc, next) {
         email_events_utils_1.emailEvent.emit('confirmEmail', { to: this.email, otp: that.confirmEmailPlainOtp, username: this.userName, subject: 'Confirm your email' });
     }
     next();
+});
+exports.userSchema.pre(['find', 'findOne'], function (next) {
+    const query = this.getQuery();
+    if (query.paranoid === false) {
+        this.setQuery({ ...query });
+    }
+    else {
+        this.setQuery({ ...query, freezedAt: { $exist: false } });
+    }
 });
 exports.userModel = mongoose_1.default.models.User || mongoose_1.default.model('User', exports.userSchema);

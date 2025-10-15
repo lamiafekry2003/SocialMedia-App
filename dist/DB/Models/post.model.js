@@ -33,7 +33,7 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.postModel = exports.postSchema = exports.AvailabilityEnum = exports.AllowCommentEnum = void 0;
+exports.postModel = exports.postSchema = exports.ActionEnum = exports.AvailabilityEnum = exports.AllowCommentEnum = void 0;
 const mongoose_1 = __importStar(require("mongoose"));
 var AllowCommentEnum;
 (function (AllowCommentEnum) {
@@ -43,9 +43,14 @@ var AllowCommentEnum;
 var AvailabilityEnum;
 (function (AvailabilityEnum) {
     AvailabilityEnum["PUBLIC"] = "PUBLIC";
-    AvailabilityEnum["PRIVATE"] = "PRIVATE";
+    AvailabilityEnum["FRIENDS"] = "FRIENDS";
     AvailabilityEnum["ONLYME"] = "ONLYME";
 })(AvailabilityEnum || (exports.AvailabilityEnum = AvailabilityEnum = {}));
+var ActionEnum;
+(function (ActionEnum) {
+    ActionEnum["LIKE"] = "LIKE";
+    ActionEnum["UNLIKE"] = "UNLIKE";
+})(ActionEnum || (exports.ActionEnum = ActionEnum = {}));
 exports.postSchema = new mongoose_1.Schema({
     content: {
         type: String,
@@ -58,6 +63,7 @@ exports.postSchema = new mongoose_1.Schema({
     attachment: {
         type: [String]
     },
+    asssestFolderId: String,
     allowComment: {
         type: String,
         enum: Object.values(AllowCommentEnum),
@@ -93,5 +99,15 @@ exports.postSchema = new mongoose_1.Schema({
     restoredAt: Date,
 }, {
     timestamps: true
+});
+exports.postSchema.pre(['find', 'findOne', 'findOneAndUpdate', 'updateOne'], function (next) {
+    const query = this.getQuery();
+    if (query.paranoid === false) {
+        this.setQuery({ ...query });
+    }
+    else {
+        this.setQuery({ ...query, freezedAt: { $exist: false } });
+    }
+    next();
 });
 exports.postModel = mongoose_1.default.models.Post || mongoose_1.default.model('Post', exports.postSchema);

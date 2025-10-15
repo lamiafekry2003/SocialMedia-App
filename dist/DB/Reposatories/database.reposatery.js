@@ -19,14 +19,31 @@ class DatabaseRepository {
         }
         return await doc.exec();
     }
+    async find({ filter, select, options }) {
+        const doc = this.model.find(filter || [], options).select(select || '');
+        if (options?.populate) {
+            doc.populate(options.populate);
+        }
+        if (options?.lean) {
+            doc.lean(options.lean);
+        }
+        return await doc.exec();
+    }
     async updateOne({ filter, update, options }) {
         return await this.model.updateOne(filter, {
             ...update,
             $inc: { __v: 1 }
         }, options);
     }
-    async findOneAndUpdate({ filter, update = {}, options = { runValidators: true, returnDocument: "after" } }) {
-        return await this.model.findOneAndUpdate(filter, { ...update, $inc: { __v: 1 } }, options);
+    async findOneAndUpdate({ filter, update = {}, options = { runValidators: true, returnDocument: "after", new: true } }) {
+        const doc = this.model.findOneAndUpdate(filter, update);
+        if (options?.populate) {
+            doc.populate(options.populate);
+        }
+        if (options?.lean) {
+            doc.lean(options.lean);
+        }
+        return await doc.exec();
     }
 }
 exports.DatabaseRepository = DatabaseRepository;

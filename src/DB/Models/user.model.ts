@@ -4,6 +4,7 @@ import { string } from "zod";
 import { generateHash } from "../../Utils/security/hash.utils";
 import { emailEvent } from "../../Utils/events/email.events.utils";
 
+
 export enum GenderEnum{
    Male='Male',
    Female='Female'
@@ -30,7 +31,12 @@ export interface IUser{
     role:RoleEnum;
     cleatedAt:Date;
     updatedAt ?:Date;
+    friends?:Types.ObjectId
     slug?:string,
+     freezedBy?:Types.ObjectId,
+    freezedAt?:Date,
+    restoredBy?:Types.ObjectId,
+    restoredAt?:Date
     profileImage?: {
         key: string
     },
@@ -76,6 +82,16 @@ export const userSchema = new Schema<IUser>(
        changeCredentialsTime:String,
        phone:String,
        address:String,
+        freezedBy:{
+        type:Schema.Types.ObjectId,
+        ref:'User'
+    },
+    freezedAt:Date,
+    restoredBy:{
+        type:Schema.Types.ObjectId,
+        ref:'User'
+    },
+    restoredAt:Date,
        gender:{
         type:String,
         enum:{
@@ -92,6 +108,12 @@ export const userSchema = new Schema<IUser>(
         },
         default:RoleEnum.USER
        },
+        friends:[
+            {
+        type:Schema.Types.ObjectId,
+        ref:'User'
+        }
+        ],
        profileImage: {
         key: string
        },
@@ -131,7 +153,7 @@ userSchema.pre('save', async function(this:HUser &{wasNew:boolean,confirmEmailPl
     }
     next()
 })
-// send email at creation 
+// send email at creation decomunt middleware
 userSchema.post('save',async function(doc,next){
     const that = this as HUser &{
         wasNew:boolean,
@@ -142,6 +164,18 @@ userSchema.post('save',async function(doc,next){
     }
     next()
 })
+// query middleware check if user freezed or not using paranoid
+userSchema.pre(['find','findOne'], function(next){
+    const query = this.getQuery() ;
+    if(query.paranoid === false){
+        // get all data in decomunet that also not freezed
+        this.setQuery({...query})
+    }else{
+        this.setQuery({...query,freezedAt:{$exist:false}})
+    }
+
+})
+
 
 export const userModel = mongoose.models.User || mongoose.model<IUser>('User',userSchema);
 export type HUser = HydratedDocument<IUser>

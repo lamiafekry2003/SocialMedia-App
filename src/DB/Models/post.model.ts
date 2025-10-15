@@ -7,15 +7,21 @@ export enum AllowCommentEnum{
 }
 export enum AvailabilityEnum{
     PUBLIC = 'PUBLIC',
-    PRIVATE = 'PRIVATE',
+    FRIENDS = 'FRIENDS',
     ONLYME ='ONLYME'
 }
+export enum ActionEnum{
+    LIKE = 'LIKE',
+    UNLIKE = 'UNLIKE',
+} 
+
 export interface IPost{
     content?:string,
     attachment?:string[],
+    asssestFolderId:string,
 
-    allowComment:AllowCommentEnum,
-    availabilty:AvailabilityEnum,
+    allowComment?:AllowCommentEnum,
+    availabilty?:AvailabilityEnum,
 
     tags?:Types.ObjectId[],
     likes?:Types.ObjectId[],
@@ -29,7 +35,8 @@ export interface IPost{
     restoredAt?:Date
 
     createdAt:Date,
-    updatedAt:Date
+    updatedAt:Date,
+
 }
 
 export const postSchema = new Schema<IPost>({
@@ -44,6 +51,7 @@ export const postSchema = new Schema<IPost>({
     attachment:{
         type:[String]
     },
+    asssestFolderId:String,
     allowComment:{
         type:String,
         enum:Object.values(AllowCommentEnum),
@@ -82,5 +90,20 @@ export const postSchema = new Schema<IPost>({
 },{
     timestamps:true
 })
+
+// query middleware check if user freezed or not using paranoid
+postSchema.pre(['find','findOne','findOneAndUpdate','updateOne'], function(next){
+    const query = this.getQuery() ;
+    if(query.paranoid === false){
+        // get all data in decomunet that also not freezed
+        this.setQuery({...query})
+    }else{
+        this.setQuery({...query,freezedAt:{$exist:false}})
+    }
+    next()
+
+})
+
+
 export const postModel = mongoose.models.Post || mongoose.model<IPost>('Post',postSchema)
-export type HUDocument = HydratedDocument<IPost>
+export type HPDocument = HydratedDocument<IPost>
