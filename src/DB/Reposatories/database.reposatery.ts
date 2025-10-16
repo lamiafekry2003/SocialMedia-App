@@ -43,15 +43,52 @@ export abstract class DatabaseRepository<TDocument>{
         select?:ProjectionType<TDocument> | null,
         options?:QueryOptions<TDocument> | null
     }):Promise<any | HydratedDocument<TDocument> | []>{
-        const doc =  this.model.find(filter|| [] ,options).select(select || '')
+        const doc =  this.model.find(filter|| [], select || '',options)
         if(options?.populate){
             doc.populate(options.populate as PopulateOptions[])
         }
         if(options?.lean){
             doc.lean(options.lean)
         }
+        if(options?.limit){
+            doc.limit(options.limit)
+        }
+        if(options?.skip){
+            doc.skip(options.skip)
+        }
         return await doc.exec()
     }
+    // paginate
+    async paginate({
+        filter = {},
+        select = {},
+        options = {},
+        page = 1 ,
+        size = 5
+    }:{
+        filter?:RootFilterQuery<TDocument>,
+        select?:ProjectionType<TDocument> | undefined,
+        options?:QueryOptions<TDocument> | undefined,
+        page?:number,
+        size?:number
+    }) {
+        let docmentCount:number | undefined = undefined;
+        let pages:number | undefined = undefined
+        page = Math.floor(page < 1 ? 1 : page)
+        options.limit = Math.floor(size < 1 || !size ? 5 :size)
+        options.skip = (page - 1 ) * size
+        docmentCount = await this.model.countDocuments(filter)
+        pages = Math.ceil(docmentCount / options.limit)
+        const result = await this.find({filter,select,options })
+        return await{
+            docmentCount,
+            pages,
+            limit:options.limit,
+            currentPage:page,
+            result
+        }
+    }
+
     // update one
     async updateOne({
         filter,
@@ -62,6 +99,16 @@ export abstract class DatabaseRepository<TDocument>{
         update:UpdateQuery<TDocument>,
         options?:MongooseUpdateQueryOptions<TDocument> |null
     }):Promise<UpdateWriteOpResult>{
+        // if get array
+        if(Array.isArray(update)){
+            update.push({
+                $set:{
+                    __v:{$add:['$__v',1]}
+                }
+            })
+            return await this.model.updateOne(filter,update,options)
+        }
+        // else
         return await this.model.updateOne(filter,{
             ...update,
             $inc:{__v:1}

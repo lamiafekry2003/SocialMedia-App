@@ -11,7 +11,7 @@ const cloud_multer_1 = require("../../Utils/multer/cloud.multer");
 exports.createPostSchema = {
     body: zod_1.default.strictObject({
         content: zod_1.default.string().min(2).max(500000).optional(),
-        attachment: zod_1.default.array(validation_middleware_1.generalFiled.file(cloud_multer_1.fileValidation.image)).min(1).max(5).optional(),
+        attachment: zod_1.default.array(validation_middleware_1.generalFiled.file(cloud_multer_1.fileValidation.image)).max(5).optional(),
         allowComment: zod_1.default.enum(post_model_1.AllowCommentEnum).default(post_model_1.AllowCommentEnum.ALLOW),
         availabilty: zod_1.default.enum(post_model_1.AvailabilityEnum).default(post_model_1.AvailabilityEnum.PUBLIC),
         tags: zod_1.default.array(validation_middleware_1.generalFiled.id).max(10).optional(),
@@ -38,7 +38,7 @@ exports.updatePostSchema = {
     }),
     body: zod_1.default.strictObject({
         content: zod_1.default.string().min(2).max(500000).optional(),
-        attachment: zod_1.default.array(validation_middleware_1.generalFiled.file(cloud_multer_1.fileValidation.image)).min(1).max(5).optional(),
+        attachment: zod_1.default.array(validation_middleware_1.generalFiled.file(cloud_multer_1.fileValidation.image)).max(5).optional(),
         allowComment: zod_1.default.enum(post_model_1.AllowCommentEnum).default(post_model_1.AllowCommentEnum.ALLOW),
         availabilty: zod_1.default.enum(post_model_1.AvailabilityEnum).default(post_model_1.AvailabilityEnum.PUBLIC),
         tags: zod_1.default.array(validation_middleware_1.generalFiled.id).max(10).optional(),
@@ -73,6 +73,7 @@ exports.likePostSchema = {
         postId: validation_middleware_1.generalFiled.id
     }),
     query: zod_1.default.strictObject({
-        action: zod_1.default.enum(post_model_1.ActionEnum).default(post_model_1.ActionEnum.LIKE)
+        action: zod_1.default.enum(post_model_1.ActionEnum).default(post_model_1.ActionEnum.LIKE),
+        paranoid: zod_1.default.boolean().optional()
     })
 };

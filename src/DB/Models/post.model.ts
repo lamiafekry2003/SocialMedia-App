@@ -52,6 +52,7 @@ export const postSchema = new Schema<IPost>({
         type:[String]
     },
     asssestFolderId:String,
+    
     allowComment:{
         type:String,
         enum:Object.values(AllowCommentEnum),
@@ -94,11 +95,11 @@ export const postSchema = new Schema<IPost>({
 // query middleware check if user freezed or not using paranoid
 postSchema.pre(['find','findOne','findOneAndUpdate','updateOne'], function(next){
     const query = this.getQuery() ;
-    if(query.paranoid === false){
+    if(query?.paranoid === false){
         // get all data in decomunet that also not freezed
         this.setQuery({...query})
     }else{
-        this.setQuery({...query,freezedAt:{$exist:false}})
+        this.setQuery({...query,freezedAt:{$exists:false}})
     }
     next()
 

@@ -6,7 +6,7 @@ import { fileValidation } from '../../Utils/multer/cloud.multer'
 export const createPostSchema={
     body:z.strictObject({
        content: z.string().min(2).max(500000).optional(),
-        attachment: z.array(generalFiled.file(fileValidation.image)).min(1).max(5).optional(),
+        attachment: z.array(generalFiled.file(fileValidation.image)).max(5).optional(),
         allowComment: z.enum(AllowCommentEnum).default(AllowCommentEnum.ALLOW),
         availabilty: z.enum(AvailabilityEnum).default(AvailabilityEnum.PUBLIC),
         tags: z.array(generalFiled.id).max(10).optional(),
@@ -34,7 +34,7 @@ export const updatePostSchema={
     }),
     body:z.strictObject({
        content: z.string().min(2).max(500000).optional(),
-        attachment: z.array(generalFiled.file(fileValidation.image)).min(1).max(5).optional(),
+        attachment: z.array(generalFiled.file(fileValidation.image)).max(5).optional(),
         allowComment: z.enum(AllowCommentEnum).default(AllowCommentEnum.ALLOW),
         availabilty: z.enum(AvailabilityEnum).default(AvailabilityEnum.PUBLIC),
         tags: z.array(generalFiled.id).max(10).optional(),
@@ -70,6 +70,7 @@ export const likePostSchema={
         postId:generalFiled.id
     }),
     query:z.strictObject({
-        action:z.enum(ActionEnum).default(ActionEnum.LIKE)
+        action:z.enum(ActionEnum).default(ActionEnum.LIKE),
+        paranoid: z.boolean().optional()
     })
 }

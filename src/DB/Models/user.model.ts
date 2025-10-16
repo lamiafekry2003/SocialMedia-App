@@ -171,8 +171,9 @@ userSchema.pre(['find','findOne'], function(next){
         // get all data in decomunet that also not freezed
         this.setQuery({...query})
     }else{
-        this.setQuery({...query,freezedAt:{$exist:false}})
+        this.setQuery({...query,freezedAt:{$exists:false}})
     }
+    next()
 
 })
 

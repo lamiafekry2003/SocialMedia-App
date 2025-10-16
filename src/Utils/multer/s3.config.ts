@@ -181,7 +181,7 @@ export const deleteFiles = async({
     Bucket = process.env.AWS_BUCKET_NAME as string,
     Urls,
     Quiet = false
-}:{Bucket?:string,Urls:string[],Quiet:boolean}):Promise<DeleteObjectCommandOutput>=>{
+}:{Bucket?:string,Urls:string[],Quiet?:boolean}):Promise<DeleteObjectCommandOutput>=>{
     const Objects =  Urls.map((url)=>{
         return {Key:url}
     })

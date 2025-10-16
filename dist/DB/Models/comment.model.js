@@ -33,25 +33,9 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.postModel = exports.postSchema = exports.ActionEnum = exports.AvailabilityEnum = exports.AllowCommentEnum = void 0;
+exports.commentModel = exports.commentSchema = void 0;
 const mongoose_1 = __importStar(require("mongoose"));
-var AllowCommentEnum;
-(function (AllowCommentEnum) {
-    AllowCommentEnum["ALLOW"] = "ALLOW";
-    AllowCommentEnum["DENY"] = "DENY";
-})(AllowCommentEnum || (exports.AllowCommentEnum = AllowCommentEnum = {}));
-var AvailabilityEnum;
-(function (AvailabilityEnum) {
-    AvailabilityEnum["PUBLIC"] = "PUBLIC";
-    AvailabilityEnum["FRIENDS"] = "FRIENDS";
-    AvailabilityEnum["ONLYME"] = "ONLYME";
-})(AvailabilityEnum || (exports.AvailabilityEnum = AvailabilityEnum = {}));
-var ActionEnum;
-(function (ActionEnum) {
-    ActionEnum["LIKE"] = "LIKE";
-    ActionEnum["UNLIKE"] = "UNLIKE";
-})(ActionEnum || (exports.ActionEnum = ActionEnum = {}));
-exports.postSchema = new mongoose_1.Schema({
+exports.commentSchema = new mongoose_1.Schema({
     content: {
         type: String,
         minLength: 2,
@@ -62,17 +46,6 @@ exports.postSchema = new mongoose_1.Schema({
     },
     attachment: {
         type: [String]
-    },
-    asssestFolderId: String,
-    allowComment: {
-        type: String,
-        enum: Object.values(AllowCommentEnum),
-        default: AllowCommentEnum.ALLOW
-    },
-    availabilty: {
-        type: String,
-        enum: Object.values(AvailabilityEnum),
-        default: AvailabilityEnum.PUBLIC
     },
     tags: [{
             type: mongoose_1.Schema.Types.ObjectId,
@@ -85,6 +58,15 @@ exports.postSchema = new mongoose_1.Schema({
     createdBy: {
         type: mongoose_1.Schema.Types.ObjectId,
         require: true,
+        ref: 'User'
+    },
+    postId: {
+        type: mongoose_1.Schema.Types.ObjectId,
+        require: true,
+        ref: 'Post'
+    },
+    commentId: {
+        type: mongoose_1.Schema.Types.ObjectId,
         ref: 'User'
     },
     freezedBy: {
@@ -100,7 +82,7 @@ exports.postSchema = new mongoose_1.Schema({
 }, {
     timestamps: true
 });
-exports.postSchema.pre(['find', 'findOne', 'findOneAndUpdate', 'updateOne'], function (next) {
+exports.commentSchema.pre(['find', 'findOne', 'findOneAndUpdate', 'updateOne'], function (next) {
     const query = this.getQuery();
     if (query?.paranoid === false) {
         this.setQuery({ ...query });
@@ -110,4 +92,4 @@ exports.postSchema.pre(['find', 'findOne', 'findOneAndUpdate', 'updateOne'], fun
     }
     next();
 });
-exports.postModel = mongoose_1.default.models.Post || mongoose_1.default.model('Post', exports.postSchema);
+exports.commentModel = mongoose_1.default.models.Comment || mongoose_1.default.model('Comment', exports.commentSchema);

@@ -163,7 +163,8 @@ exports.userSchema.pre(['find', 'findOne'], function (next) {
         this.setQuery({ ...query });
     }
     else {
-        this.setQuery({ ...query, freezedAt: { $exist: false } });
+        this.setQuery({ ...query, freezedAt: { $exists: false } });
     }
+    next();
 });
 exports.userModel = mongoose_1.default.models.User || mongoose_1.default.model('User', exports.userSchema);
