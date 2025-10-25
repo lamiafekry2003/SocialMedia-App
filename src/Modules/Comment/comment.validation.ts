@@ -1,6 +1,8 @@
 import z from 'zod'
 import { generalFiled } from '../../Middlewares/validation.middleware'
 import { fileValidation } from '../../Utils/multer/cloud.multer'
+
+
 export const addCommentSchema = {
     params:z.strictObject({
         postId:generalFiled.id
@@ -26,4 +28,11 @@ export const addCommentSchema = {
     }
     })
 
+}
+
+export const createReplySchema={
+    params:addCommentSchema.params.extend({
+        commentId:generalFiled.id
+    }),
+    body:addCommentSchema.body
 }

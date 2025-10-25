@@ -33,63 +33,21 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.commentModel = exports.commentSchema = void 0;
+exports.friendRequestModel = exports.friendRequestSchema = void 0;
 const mongoose_1 = __importStar(require("mongoose"));
-exports.commentSchema = new mongoose_1.Schema({
-    content: {
-        type: String,
-        minLength: 2,
-        maxLength: 500000,
-        required: function () {
-            return !this?.attachment?.length;
-        }
-    },
-    attachment: {
-        type: [String]
-    },
-    tags: [{
-            type: mongoose_1.Schema.Types.ObjectId,
-            ref: 'User'
-        }],
-    likes: [{
-            type: mongoose_1.Schema.Types.ObjectId,
-            ref: 'User'
-        }],
+exports.friendRequestSchema = new mongoose_1.Schema({
     createdBy: {
         type: mongoose_1.Schema.Types.ObjectId,
         required: true,
         ref: 'User'
     },
-    postId: {
+    sendTo: {
         type: mongoose_1.Schema.Types.ObjectId,
         required: true,
-        ref: 'Post'
-    },
-    commentId: {
-        type: mongoose_1.Schema.Types.ObjectId,
-        ref: 'Comment'
-    },
-    freezedBy: {
-        type: mongoose_1.Schema.Types.ObjectId,
         ref: 'User'
     },
-    freezedAt: Date,
-    restoredBy: {
-        type: mongoose_1.Schema.Types.ObjectId,
-        ref: 'User'
-    },
-    restoredAt: Date,
+    acceptedAt: Date,
 }, {
     timestamps: true
 });
-exports.commentSchema.pre(['find', 'findOne', 'findOneAndUpdate', 'updateOne'], function (next) {
-    const query = this.getQuery();
-    if (query?.paranoid === false) {
-        this.setQuery({ ...query });
-    }
-    else {
-        this.setQuery({ ...query, freezedAt: { $exists: false } });
-    }
-    next();
-});
-exports.commentModel = mongoose_1.default.models.Comment || mongoose_1.default.model('Comment', exports.commentSchema);
+exports.friendRequestModel = mongoose_1.default.models.FriendRequest || mongoose_1.default.model('FriendRequest', exports.friendRequestSchema);

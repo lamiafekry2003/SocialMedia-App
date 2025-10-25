@@ -1,4 +1,5 @@
 import mongoose, { HydratedDocument, Schema, Types  } from "mongoose"
+import { IPost } from "./post.model"
 
 
 
@@ -7,7 +8,7 @@ export interface IComment{
        attachment?:string[],
        tags?:Types.ObjectId[],
        likes?:Types.ObjectId[],
-       postId:Types.ObjectId,
+       postId:Types.ObjectId  | Partial<IPost>,
        commentId?:Types.ObjectId
    
      createdBy:Types.ObjectId,
@@ -28,8 +29,8 @@ export const commentSchema = new Schema<IComment>({
             type:String,
             minLength:2,
             maxLength:500000,
-            require:function(){
-                return !this.attachment?.length
+            required:function(this: any): boolean{
+                return !this?.attachment?.length
             }
         },
         attachment:{
@@ -46,17 +47,17 @@ export const commentSchema = new Schema<IComment>({
         }],
         createdBy:{
             type:Schema.Types.ObjectId,
-            require:true,
+            required:true,
             ref:'User'
         },
          postId:{
             type:Schema.Types.ObjectId,
-            require:true,
+            required:true,
             ref:'Post'
         },
          commentId:{
             type:Schema.Types.ObjectId,
-            ref:'User'
+            ref:'Comment'
         },
         freezedBy:{
             type:Schema.Types.ObjectId,

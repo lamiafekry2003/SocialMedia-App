@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.addCommentSchema = void 0;
+exports.createReplySchema = exports.addCommentSchema = void 0;
 const zod_1 = __importDefault(require("zod"));
 const validation_middleware_1 = require("../../Middlewares/validation.middleware");
 const cloud_multer_1 = require("../../Utils/multer/cloud.multer");
@@ -31,4 +31,10 @@ exports.addCommentSchema = {
             });
         }
     })
+};
+exports.createReplySchema = {
+    params: exports.addCommentSchema.params.extend({
+        commentId: validation_middleware_1.generalFiled.id
+    }),
+    body: exports.addCommentSchema.body
 };

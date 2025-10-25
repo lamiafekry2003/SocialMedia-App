@@ -12,4 +12,5 @@ const validation_middleware_1 = require("../../Middlewares/validation.middleware
 const comment_validation_1 = require("./comment.validation");
 const router = (0, express_1.Router)({ mergeParams: true });
 router.post('/add-comment', (0, cloud_multer_1.cloudFileUpload)({ validation: cloud_multer_1.fileValidation.image, storageApproch: cloud_multer_1.StorageEnum.MEMORY }).array('attachment', 5), (0, validation_middleware_1.validation)(comment_validation_1.addCommentSchema), (0, authentication_middleware_1.authentication)(comment_authorization_1.endPoint.createComment, authentication_middleware_1.TokenEnum.ACCESS), comment_service_1.default.addComment);
+router.post('/:commentId/reply', (0, cloud_multer_1.cloudFileUpload)({ validation: cloud_multer_1.fileValidation.image, storageApproch: cloud_multer_1.StorageEnum.MEMORY }).array('attachment', 5), (0, validation_middleware_1.validation)(comment_validation_1.createReplySchema), (0, authentication_middleware_1.authentication)(comment_authorization_1.endPoint.replyComment, authentication_middleware_1.TokenEnum.ACCESS), comment_service_1.default.createReplay);
 exports.default = router;

@@ -1,12 +1,17 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const mongoose_1 = require("mongoose");
 const user_model_1 = require("../../DB/Models/user.model");
 const token_utils_1 = require("../../Utils/token/token.utils");
 const user_repository_1 = require("../../DB/Reposatories/user.repository");
 const s3_config_1 = require("../../Utils/multer/s3.config");
 const cloud_multer_1 = require("../../Utils/multer/cloud.multer");
+const feiendRequest_repository_1 = require("../../DB/Reposatories/feiendRequest.repository");
+const friendRequest_model_1 = require("../../DB/Models/friendRequest.model");
+const errorHandling_utils_1 = require("../../Utils/errorHandling/errorHandling.utils");
 class UserServices {
     _userModel = new user_repository_1.UserRepository(user_model_1.userModel);
+    _friendRequestModel = new feiendRequest_repository_1.FrientRequestRepository(friendRequest_model_1.friendRequestModel);
     constructor() { }
     getUser = async (req, res, next) => {
         return res.status(200).json({ message: 'user found successfully', user: req.user, decoded: req.decoded });
@@ -94,6 +99,69 @@ class UserServices {
             Quiet: false,
         });
         return res.status(200).json({ message: 'Images deleted successfully', result });
+    };
+    sendFriendRequest = async (req, res, next) => {
+        const { userId } = req.params;
+        const checkFriendRequestExists = await this._friendRequestModel.findOne({
+            filter: {
+                createdBy: { $in: [req.user?._id, userId] },
+                sendTo: { $in: [req.user?._id, userId] }
+            }
+        });
+        if (checkFriendRequestExists)
+            throw new errorHandling_utils_1.BadRequestException('friend request already sent or user is your friend');
+        const user = await this._userModel.findOne({
+            filter: { _id: userId }
+        });
+        if (!user)
+            throw new errorHandling_utils_1.NotFoundException('User not found');
+        const [friedRequest] = await this._friendRequestModel.create({
+            data: [{
+                    createdBy: req.user?._id,
+                    sendTo: new mongoose_1.Types.ObjectId(userId),
+                }]
+        }) || [];
+        if (!friedRequest)
+            throw new errorHandling_utils_1.BadRequestException('fail to send friend request');
+        return res.status(200).json({ message: 'friend request sent successfully', data: friedRequest });
+    };
+    acceptFriendRequest = async (req, res, next) => {
+        const { requestId } = req.params;
+        const checkFriendRequestExists = await this._friendRequestModel.findOneAndUpdate({
+            filter: {
+                _id: requestId,
+                sendTo: req.user?._id,
+                acceptedAt: { $exists: false }
+            },
+            update: {
+                acceptedAt: new Date()
+            }
+        });
+        if (!checkFriendRequestExists)
+            throw new errorHandling_utils_1.ConflictException('Fail to accept friend request or friend request not found');
+        await Promise.all([
+            await this._userModel.updateOne({
+                filter: {
+                    _id: checkFriendRequestExists.createdBy
+                },
+                update: {
+                    $addToSet: {
+                        friends: checkFriendRequestExists.sendTo
+                    }
+                }
+            }),
+            await this._userModel.updateOne({
+                filter: {
+                    _id: checkFriendRequestExists.sendTo
+                },
+                update: {
+                    $addToSet: {
+                        friends: checkFriendRequestExists.createdBy
+                    }
+                }
+            })
+        ]);
+        return res.status(200).json({ message: 'friend request accepted successfully' });
     };
 }
 exports.default = new UserServices();

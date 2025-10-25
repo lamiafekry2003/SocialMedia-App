@@ -44,9 +44,9 @@ export const postSchema = new Schema<IPost>({
         type:String,
         minLength:2,
         maxLength:500000,
-        require:function(){
-            return !this.attachment?.length
-        }
+         required:function(this: any): boolean{
+                return !this?.attachment?.length
+            }
     },
     attachment:{
         type:[String]

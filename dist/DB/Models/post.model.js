@@ -56,8 +56,8 @@ exports.postSchema = new mongoose_1.Schema({
         type: String,
         minLength: 2,
         maxLength: 500000,
-        require: function () {
-            return !this.attachment?.length;
+        required: function () {
+            return !this?.attachment?.length;
         }
     },
     attachment: {
